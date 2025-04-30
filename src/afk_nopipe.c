@@ -36,10 +36,12 @@ static struct{
     int signal;
 }afk_signal={
     .signal=0
-}
+};
 
-
-void afk_input(){
+    void afk_input(){
+        pthread_mutex_lock(&afk_signal.mutex);
+        afk_signal.signal=1;
+        pthread_mutex_unlock(&afk_signal.mutex);
 
 }
 //should_exit 
@@ -110,7 +112,7 @@ void afk_init(){
         perror("Mutex initialization failed");
         exit(1);
     }
-    if (pthread_mutex_init(&afk_input.mutex, NULL) != 0) {
+    if (pthread_mutex_init(&afk_signal.mutex, NULL) != 0) {
         perror("Mutex initialization failed");
         exit(1);
     }
