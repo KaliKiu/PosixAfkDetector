@@ -20,8 +20,6 @@ static struct{
     int is_afk;
     int is_thread_running;
 }afk_check={
-    .elapsed =0,
-    .is_afk=0,
     .is_thread_running=0
 };
 
@@ -31,15 +29,19 @@ static struct{
 }afk_tc={
     .should_exit=0,
 };
+
 static struct{
     pthread_mutex_t mutex;
     int signal;
 }afk_signal={
     .signal=0
-}
+};
 
 
 void afk_input(){
+    pthread_mutex_lock(&afk_signal.mutex);
+    afk_signal.signal=1;
+    pthread_mutex_unlock(&afk_signal.mutex);
 
 }
 //should_exit 
@@ -47,10 +49,11 @@ void reset_afk(){
     clock_gettime(CLOCK_MONOTONIC, &afk_check.start);
     afk_check.is_afk =0;
     afk_check.elapsed =0;
+    usleep(THREAD_SLEEP_MS);
 }
 
 
-void* afk_check_thread(void*arg){
+void* afk_print(void*arg){
     reset_afk(); 
     while(1){
         clock_gettime(CLOCK_MONOTONIC,&afk_check.end);
@@ -64,7 +67,7 @@ void* afk_check_thread(void*arg){
              printf("\n~~You were afk for %.3f Seconds\n\n", afk_check.elapsed);
              printf("gambashell>\n");
              reset_afk();
-        }else if(afk_tc.should_exit){
+        }else if(afk_tc.should_exit){ //not afk but input, reset it
              reset_afk();
         }
         pthread_mutex_unlock(&afk_tc.mutex);
@@ -76,7 +79,7 @@ void* afk_counter_thread(void*arg){
     int buffer[1];
     pthread_t thread;
 
-    if(pthread_create(&thread,NULL,afk_check_thread,&afk_check.start)){
+    if(pthread_create(&thread,NULL,afk_print,NULL)){
             perror("Error: Failed to create thread");
             exit(1);
         }
@@ -89,16 +92,19 @@ void* afk_counter_thread(void*arg){
         //waits for changes on pipefd[0]
         pthread_mutex_lock(&afk_signal.mutex);
         while(!afk_signal.signal){
-            usleep(THREAD_SLEEP_MS);
+            pthread_mutex_unlock(&afk_signal.mutex);
+            usleep(THREAD_SLEEP_MS); //sleep + unlock it so afk_input() can change afk_signal.signal
+            pthread_mutex_lock(&afk_signal.mutex);
         }
         afk_signal.signal=0;
         pthread_mutex_unlock(&afk_signal.mutex);
+
         pthread_mutex_lock(&afk_tc.mutex);
         afk_tc.should_exit=1;
         pthread_mutex_unlock(&afk_tc.mutex);
          
             
-        usleep(THREAD_SLEEP_MS);    
+        usleep(THREAD_SLEEP_MS*2);    //*2 so prevent buggs? 
     }
     return NULL;
 }
@@ -110,7 +116,7 @@ void afk_init(){
         perror("Mutex initialization failed");
         exit(1);
     }
-    if (pthread_mutex_init(&afk_input.mutex, NULL) != 0) {
+    if (pthread_mutex_init(&afk_signal.mutex, NULL) != 0) {
         perror("Mutex initialization failed");
         exit(1);
     }
