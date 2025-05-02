@@ -18,7 +18,7 @@ void afk_input();
 void afk_reset();
 ```
 
-##Status
+
 Still work in progress, adding additional API Functions such as: 
 -Callback Function
 -Compatibility with multi-process environments, including inter-process communication and piping.
