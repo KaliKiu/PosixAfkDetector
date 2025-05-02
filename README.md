@@ -17,6 +17,7 @@ void afk_input();
 // Reset the AFK timer and status
 void afk_reset();
 ```
+
 ##Status
 Still work in progress, adding additional API Functions such as: 
 -Callback Function
