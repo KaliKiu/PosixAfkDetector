@@ -20,5 +20,5 @@ void afk_reset();
 
 
 Still work in progress, adding additional API Functions such as: 
--Callback Function
--Compatibility with multi-process environments, including inter-process communication and piping.
+\n-Callback Function
+\n-Compatibility with multi-process environments, including inter-process communication and piping.
