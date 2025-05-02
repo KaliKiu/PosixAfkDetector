@@ -1,7 +1,7 @@
 # PosixAfkDetector
 PosixAfkDetector provides a simple C library for tracking user activity states. It monitors input events to determine when a user has gone AFK and when they've returned, with configurable timeout thresholds.
 ## API Functions
-
+```c
 // Start the AFK detection system
 void afk_start();
 
@@ -16,3 +16,4 @@ void afk_input();
 
 // Reset the AFK timer and status
 void afk_reset();
+```
