@@ -26,9 +26,9 @@ static struct {
 static struct {
     struct timespec start, end;
     float elapsed;
-    int is_running;
+    
 } afk_tm = {
-    .is_running = 0,
+    
 };
 
 static struct {
@@ -114,8 +114,6 @@ void* afk_monitor(void* arg) {
     }
     pthread_detach(thread);
 
-    afk_tm.is_running = 1;
-
     while (1) {
         pthread_mutex_lock(&afk_st.mutex);
         afk_st.input_recv = 0;
@@ -156,7 +154,6 @@ void afk_start() {
     }
     pthread_detach(thread);
 
-    while (afk_tm.is_running == 0) {
         usleep(THREAD_SLEEP_US);
-    }
+    
 }
